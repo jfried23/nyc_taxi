@@ -14,8 +14,7 @@ via d3j chord diagram.
 #Connect to the local Postgres database 
 conn = sqlalchemy.create_engine('postgresql:///taxi' )
 
-#querry to find the number of trips that begin and end in Manhattan or at a NY airport 
-
+#querry to find the trips begining in the top 20 borros with the largest number of taxi pickups 
 qr = """ 
 		select  pickup_name, dropoff_name, sum(num_trips) as trips
 		from daily_neighborhood_traffic
@@ -48,9 +47,9 @@ for i, n in enumerate(all_hoods): names[n] = i
 
 #The matrix will encode the number of trips between each neighborhood. Create & populate.
 matrix = np.zeros((all_hoods.size, all_hoods.size))
-matrix = matrix / sum(matrix)
 
 df.apply( lambda x: matrix.__setitem__( (names[x.pickup_name], names[x.dropoff_name]), x.trips), axis=1);
+matrix = matrix / sum(matrix)
 file = open('./matrix.json','w'); file.write( simplejson.dumps( matrix.tolist() ))
 file.close()
 
@@ -61,7 +60,8 @@ color=map( matplotlib.colors.rgb2hex, plt.cm.rainbow(np.linspace(0,1, all_hoods.
 
 cmap = 'name,color\n'
 for i, n in enumerate(all_hoods):
-	cmap = cmap + '%s,%s\n' % (n, color[i] ) 
+
+	cmap = cmap + '%s,%s\n' % (n.split('-')[0], color[i] ) 
 
 file = open('./borro.csv','w'); 
 file.write(cmap)

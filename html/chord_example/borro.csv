@@ -1,21 +1,21 @@
 name,color
-Midtown-Midtown South,#8000ff
-Hudson Yards-Chelsea-Flatiron-Union Square,#6629fe
-Upper East Side-Carnegie Hill,#4c50fc
-Turtle Bay-East Midtown,#3079f7
+Midtown,#8000ff
+Hudson Yards,#6629fe
+Upper East Side,#4c50fc
+Turtle Bay,#3079f7
 Upper West Side,#169bf2
 West Village,#07bbea
-Murray Hill-Kips Bay,#20d5e1
+Murray Hill,#20d5e1
 Clinton,#3dead5
-SoHo-TriBeCa-Civic Center-Little Italy,#56f7ca
+SoHo,#56f7ca
 Lincoln Square,#72febb
-Lenox Hill-Roosevelt Island,#8cfead
+Lenox Hill,#8cfead
 Yorkville,#a8f79c
-Battery Park City-Lower Manhattan,#c2ea8c
+Battery Park City,#c2ea8c
 East Village,#ded579
 Gramercy,#f9bb66
 LGA,#ff9b52
-North Side-South Side,#ff793e
-park-cemetery-etc-Manhattan,#ff5029
+North Side,#ff793e
+park,#ff5029
 Chinatown,#ff2914
 JFK,#ff0000
