@@ -60,7 +60,7 @@ color=map( matplotlib.colors.rgb2hex, plt.cm.rainbow(np.linspace(0,1, all_hoods.
 
 cmap = 'name,color\n'
 for i, n in enumerate(all_hoods):
-
+	if n == 'Clinton': n ='Hell\'s Kitchen'
 	cmap = cmap + '%s,%s\n' % (n.split('-')[0], color[i] ) 
 
 file = open('./borro.csv','w'); 
