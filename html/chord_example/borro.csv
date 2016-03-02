@@ -1,21 +1,21 @@
 name,color
-Midtown,#8000ff
-Hudson Yards,#6629fe
-Upper East Side,#4c50fc
-Turtle Bay,#3079f7
-Upper West Side,#169bf2
-West Village,#07bbea
-Murray Hill,#20d5e1
-Hell's Kitchen,#3dead5
-SoHo,#56f7ca
-Lincoln Square,#72febb
-Lenox Hill,#8cfead
-Yorkville,#a8f79c
-Battery Park City,#c2ea8c
-East Village,#ded579
-Gramercy,#f9bb66
-LGA,#ff9b52
-North Side,#ff793e
-park,#ff5029
-Chinatown,#ff2914
-JFK,#ff0000
+Midtown,#ff0000
+Hudson Yards,#ff2914
+Upper East Side,#ff5029
+Turtle Bay,#ff793e
+Upper West Side,#ff9b52
+West Village,#f9bb66
+Murray Hill,#ded579
+Hell's Kitchen,#c2ea8c
+SoHo,#a8f79c
+Lincoln Square,#8cfead
+Lenox Hill,#72febb
+Yorkville,#56f7ca
+Battery Park City,#3dead5
+East Village,#20d5e1
+Gramercy,#07bbea
+LGA,#169bf2
+North Side,#3079f7
+park,#4c50fc
+Chinatown,#6629fe
+JFK,#8000ff

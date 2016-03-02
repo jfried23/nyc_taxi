@@ -1,10 +1,13 @@
 import pandas as pd
+import geopandas as gpd
 import numpy as np
 import sqlalchemy
 import simplejson
 
 import matplotlib
 import matplotlib.pyplot as plt
+
+from collections import defaultdict
 
 """"
 This script aggreagtes the number taxi trips between neighbhoods for visulazation
@@ -42,7 +45,7 @@ df    = pd.io.sql.read_sql(qr,conn)
 #Get an ordered array of all the unqiue neighbhord names and load into a dictionary for fast lookup
 all_hoods = df.sort_values('trips')[::-1].dropoff_name.unique()
 
-names = {}
+names = defaultdict()
 for i, n in enumerate(all_hoods): names[n] = i
 
 #The matrix will encode the number of trips between each neighborhood. Create & populate.
@@ -55,7 +58,7 @@ file.close()
 
 
 #generate a color for each neighbhood
-color=map( matplotlib.colors.rgb2hex, plt.cm.rainbow(np.linspace(0,1, all_hoods.size)))
+color=map( matplotlib.colors.rgb2hex, plt.cm.rainbow(np.linspace(0,1, all_hoods.size)))[::-1]
 
 
 cmap = 'name,color\n'
@@ -67,4 +70,21 @@ file = open('./borro.csv','w');
 file.write(cmap)
 file.close()
 
+#Now make a map of the nighbhoods included in the analysis
+qr_geo = """
+			select ntaname, geom
+			from nyc_geo_data
+			where borocode != 5 
+		 """
 
+gdf2 = gpd.read_postgis(qr_geo, conn, geom_col='geom')
+
+f=plt.figure(); ax=f.gca()
+for g in gdf2.itertuples():
+	if g.ntaname in names.keys(): cr = color[names.get(g.ntaname)]; al=1
+	else: cr=None; al=0
+	gpd.plotting.plot_multipolygon( ax, g.geom, facecolor=cr, alpha=al)
+ax.set_aspect('equal')
+plt.axis('off')
+plt.savefig("mapTop20.svg", transparent=True, bbox_inches='tight', pad_inches=0)
+	

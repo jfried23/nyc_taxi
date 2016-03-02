@@ -29,20 +29,31 @@ display: none;
 <h1>New York City Taxi Traffic</h1>
 
 <p>
-Here we are taking a look at the famious (at least amongst data anlysists) <a href=http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml> NYC Taxi and Limousine Commission Trip Records</a>. I will be using a subset of the total data corpus detailing 72,368,450 individual cab rides taken between January 2015 and June 2015 inclusive, and totalling ~28Gb of raw data. To bin the GPS corrdinates provided by the taxi commision I used boundry shape files from the <a href='http://www1.nyc.gov/site/planning/data-maps/open-data.page#other'>New York City Department of City Planning Neighborhood Tabulations</a> 2010 census tracts. All the anlysis was preformed using PostgreSQL / PostGIS (for the heavy geospatial stuff) and Python / Pandas (for the fun stuff) on my macbook; analysis scripts can be found on my <a href='https://github.com/jfried23/nyc_taxi'>github</a>. That out of the way and without further ado, lets take a look at the data!     
+Here we are taking a look at the famious (at least amongst data anlysists) <a href=http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml> NYC Taxi and Limousine Commission Trip Records</a>. I will be using a subset of the total data corpus detailing 72,368,450 individual cab rides taken between January 2015 and June 2015 inclusive, and totalling ~28Gb of raw data. To bin the GPS corrdinates of each pickup and drop-off by neighborhood I used boundry shape files from the <a href='http://www1.nyc.gov/site/planning/data-maps/open-data.page#other'>New York City Department of City Planning Neighborhood Tabulations</a> 2010 census tracts. All the anlysis was preformed using PostgreSQL / PostGIS (for the heavy geospatial stuff) and Python / Pandas (everything else); analysis scripts can be found on my <a href='https://github.com/jfried23/nyc_taxi'>github</a>. That out of the way and without further ado, lets take a look at the data!     
 </p>
  
+ <div id = 'ntrips'>
+ </div>
+
 <div id = 'chord'>
+	<h3>Connectivty between 20 neighborhoods with the greatest total number of taxi pickups</h3> 
 	<aside>Mouseover to focus on travel from a particular neighborhood.
+	<p>
 	<p>Thanks to Mike Bostock for <a href="http://bost.ocks.org/mike/uberdata/">Uber Rides by Neighborhood!</a></p>
+	</p>
 	</aside>
  </div>
+
+ <img src="mapTop20.svg" align='center',width="700">
+
+</p>
+
  
 <script src="./d3.v3.min.js"></script>
 <script>
  
-	var width = 720,
-	height = 720,
+	var width =700,
+	height = 700,
 	outerRadius = Math.min(width, height) / 2 - 10,
 	innerRadius = outerRadius - 24;
  
