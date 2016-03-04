@@ -60,29 +60,26 @@
 
   <div id="wrapper">  
       <div id="map_area"></div>
-      <button id="play">play</button>
+  
       <span id="clock">year</span>
   </div>
 
 
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
-<script src="http://d3js.org/queue.v1.min.js"></script>
-<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="d3.v3.min.js"></script>
+<script src="topojson.v1.min.js"></script>
 <script>
   //globals
 var width, height, projection, path, graticule, svg, attributeArray = [], currentAttribute = 0, playing = false;
 
 
-            var sl = 2;
-            var w = 200*sl;
-            var h = 250*sl;
+            var w = 500;
+            var h = 700;
 
             //Define map projection
             var projection = d3.geo.mercator()
                                    .translate([w/2, h/2])
-                                   .scale([28000])
-                                   .center( [-73.86, 40.73] );
+                                   .scale([70000])
+                                   .center( [-73.88, 40.74] );
                                    
 
             //Define path generator
@@ -135,10 +132,6 @@ function processData(map,flux)
 
 function drawMap( map)
 {
-            var sl = 2;
-            var w = 200*sl;
-            var h = 250*sl;
-
 
 
                 //Bind data and create one path per GeoJSON feature
