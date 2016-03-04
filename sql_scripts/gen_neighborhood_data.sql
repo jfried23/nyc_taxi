@@ -23,7 +23,7 @@ from trips
 
 
 /*Now create a table tracking the number of trips between each neighbhood 
-by the day of the week and hour of the day */
+by the day of the week and hour of the day\d */
 select  extract(dow from pickup_datetime) as day,
         extract(hour from pickup_datetime) as hour,
         pickup_name,
@@ -34,5 +34,3 @@ into daily_neighborhood_traffic
 
 from neighborhood_trip_data
 group by day, hour, pickup_name, dropoff_name;
-
-

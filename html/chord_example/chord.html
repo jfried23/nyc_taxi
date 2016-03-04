@@ -22,20 +22,71 @@ stroke-width: .25px;
 #circle:hover path.fade {
 display: none;
 }
- 
+
+
+ 	path.default 
+	{
+       		stroke-width: 0.5px;
+		fill: #ccc;
+  		stroke: #666
+ 	 }
+	path.selected
+	{
+	    stroke: black;
+    	stroke-width: 2.5px;
+		fill: #ccc;
+	}
+	path.park
+	{
+	    stroke: black;
+    	stroke-width: 2.5px;
+		fill: #F2F2F2;
+	}
+
+
+
 </style>
  
  
 <h1>New York City Taxi Traffic</h1>
 
 <p>
-Here we are taking a look at the famious (at least amongst data anlysists) <a href=http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml> NYC Taxi and Limousine Commission Trip Records</a>. I will be using a subset of the total data corpus detailing 72,368,450 individual cab rides taken between January 2015 and June 2015 inclusive, and totalling ~28Gb of raw data. To bin the GPS corrdinates of each pickup and drop-off by neighborhood I used boundry shape files from the <a href='http://www1.nyc.gov/site/planning/data-maps/open-data.page#other'>New York City Department of City Planning Neighborhood Tabulations</a> 2010 census tracts. All the anlysis was preformed using PostgreSQL / PostGIS (for the heavy geospatial stuff) and Python / Pandas (everything else); analysis scripts can be found on my <a href='https://github.com/jfried23/nyc_taxi'>github</a>. That out of the way and without further ado, lets take a look at the data!     
+Here we are taking a look at the famious (at least amongst data anlysists) <a href=http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml> NYC Taxi and Limousine Commission Trip Records</a>. I will be using a subset of the total data corpus detailing 72,368,450 individual cab rides taken between January 2015 and June 2015 inclusive, and totalling ~28Gb of raw data. To get a handel on the data the GPS corrdinates for each pickup and drop-off location were binned into neighborhoods as defined by the <a href='http://www1.nyc.gov/site/planning/data-maps/open-data.page#other'>New York City Department of City Planning Neighborhood Tabulations</a> 2010 census tracts. All the anlysis was preformed using PostgreSQL / PostGIS (for the heavy geospatial stuff) and Python / Pandas (everything else); analysis scripts can be found on my <a href='https://github.com/jfried23/nyc_taxi'>github</a>. That out of the way and without further ado, lets take a look at the data!     
 </p>
- 
- <div id = 'ntrips'>
+
+
+<div id = 'map'>
+	<h3>All the lonely people, where do they all come from?</h3> 
+	<p>
+	First lets take a look
+	</p>
+	<aside>Mouseover to focus on travel from a particular neighborhood.
+	<p>
+	<p>Black patches are parks.</a></p>
+	</p>
+	</aside>
  </div>
 
+<div>
+<p> Interesting to not note fsjkladgsjkl rwetadfs hjkldfsh weiutyhdksjlhadsiu tewdfshdsjkldgshkl sIUGHjkdgsahiuadsghjkgdsh cZSciohnboha'jl </p>
+</div>
+
+
 <div id = 'chord'>
+	<h3>Connectivty between 20 neighborhoods with the most taxi pickups</h3> 
+	<aside>Mouseover to focus on travel from a particular neighborhood.
+	<p>
+	<p>Thanks to Mike Bostock for <a href="http://bost.ocks.org/mike/uberdata/">Uber Rides by Neighborhood!</a></p>
+	</p>
+	</aside>
+ </div>
+
+<p>
+One feature that immagdelty stood out to me was that the cab riding population of the 'North Side' neighborh, more commonly known as Williamsburg Brooklyn (home of beards, blue ribbon beer, trucker hats and all things meta/ironic), seldom take cabs into Manhattan. Most cab fares that begin in Williamsburg end in Williamsburg. 
+</p>
+
+
+<div id = 'new'>
 	<h3>Connectivty between 20 neighborhoods with the greatest total number of taxi pickups</h3> 
 	<aside>Mouseover to focus on travel from a particular neighborhood.
 	<p>
@@ -44,12 +95,116 @@ Here we are taking a look at the famious (at least amongst data anlysists) <a hr
 	</aside>
  </div>
 
- <img src="mapTop20.svg" align='center',width="700">
 
-</p>
+<script src="topojson.v1.min.js"></script>
+<script src="d3.v3.min.js"></script>
 
- 
-<script src="./d3.v3.min.js"></script>
+<!-- Code to make the nyc area map-->
+<script>
+            //Width and height
+	    	var sl = 2;
+            var w = 200*sl;
+            var h = 250*sl;
+
+            //Define map projection
+            var projection = d3.geo.mercator()
+                                   .translate([w/2, h/2])
+                                   .scale([28000*sl]);
+
+            //Define path generator
+            var coast = d3.geo.path()
+                             .projection(projection);
+
+            //Create SVG element
+            var svgmp = d3.select("#map")
+                          .append('svg')
+			.attr('class', 'nymap')
+                        .attr("width", w)
+                        .attr("height", h);
+
+            //Load in GeoJSON data
+            d3.json("boro_simple.json", function(json) {
+	
+		var center = d3.geo.centroid(json);
+		projection.center( [-73.86, 40.73] );
+
+                //Bind data and create one path per GeoJSON feature
+               svgmp.selectAll("path")
+                   .data(json.features)
+                   .enter()
+                   .append("path")
+                   .attr("d", coast)
+		   .filter( function(d){ if ( d.properties.ntaname.includes('park-') == true )
+		   							{
+		   								d3.select('this').attr("class", 'park');
+		   								return false;
+		   							}
+		   							else {return true;}	; 
+		   						} )
+
+		   .attr('id', function(d){ return d.properties.ntaname; } )
+           .attr('class','default')
+		   .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
+		   .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
+		 
+		
+	            });
+</script>
+
+<script>
+            //Width and height
+	    	var sl = 2;
+            var w = 200*sl;
+            var h = 250*sl;
+
+            //Define map projection
+            var projection = d3.geo.mercator()
+                                   .translate([w/2, h/2])
+                                   .scale([28000*sl]);
+
+            //Define path generator
+            var coast = d3.geo.path()
+                             .projection(projection);
+
+            //Create SVG element
+            var svgmp2 = d3.select("#map")
+                          .append("svg")
+			.attr('class', 'nymap')
+                        .attr("width", w)
+                        .attr("height", h);
+
+            //Load in GeoJSON data
+            d3.json("boro_simple.json", function(json) {
+	
+		var center = d3.geo.centroid(json);
+		projection.center( [-73.86, 40.73] );
+
+                //Bind data and create one path per GeoJSON feature
+               svgmp2.selectAll("path")
+                   .data(json.features)
+                   .enter()
+                   .append("path")
+                   .attr("d", coast)
+                   .filter( function(d){ if ( d.properties.ntaname.includes('park-') == true )
+		   							{
+		   								d3.select('this').attr("class", 'park');
+		   								return false;
+		   							}
+		   							else {return true;}	; 
+		   						} )
+		   .filter( function(d){ return ! d.properties.ntaname.includes('park-'); } )
+		   .attr('id', function(d){ return d.properties.ntaname; } )
+           .attr('class','default')
+		   .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
+		   .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
+		 
+		
+	            });
+</script>
+
+
+
+<!-- generate chorde diagam below -->
 <script>
  
 	var width =700,
