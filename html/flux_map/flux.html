@@ -1,112 +1,274 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<title>NYC Traffic Analysis</title>
-<style>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>d3 choropleth map</title>
+    <style>
+      #wrapper {
+          width: 960px;
+          margin: -30px auto 0;
+      }
+      #map {
+          width: 960px;
+          height: 580px;
+          position: relative;
+      }
+      .stroke {
+        fill: none;
+        stroke: #888;
+        stroke-width: 2px;
+      }
+      
+      .fill {
+        fill: #fff;
+      }
+      
+      .graticule {
+        fill: none;
+        stroke: #777;
+        stroke-width: .5px;
+        stroke-opacity: .5;
+      }
+      
+      .land {
+        fill: #222;
+      }
+      
+      .boundary {
+        fill: none;
+        stroke: #fff;
+        stroke-width: .5px;
+      }
+      .country {
+          fill: steelblue;
+          stroke: white;
+      }
+      #play, #clock {
+        position: absolute;
+        top: 15px;
+      }
+      #play {
+        left: 15px;
+      }
+      #clock {
+        left: 65px;
+      }
+    </style>
+</head>
 
-@import url(style.css);
- 
- <head>
-#circle circle {
-fill: none;
-pointer-events: all;
-}
- 
-.group path {
-fill-opacity: .5;
-}
- 
-path.chord {
-stroke: #000;
-stroke-width: .25px;
-}
- 
-#circle:hover path.fade {
-display: none;
-}
+<body>
+
+  <div id="wrapper">  
+      <div id="map_area"></div>
+      <button id="play">play</button>
+      <span id="clock">year</span>
+  </div>
 
 
-  path.default 
-  {
-          stroke-width: 0.5px;
-    fill: #ccc;
-      stroke: #666
-   }
-  path.selected
-  {
-      stroke: black;
-      stroke-width: 2.5px;
-    fill: #ccc;
-  }
-  path.park
-  {
-      stroke: black;
-      stroke-width: 2.5px;
-    fill: #F2F2F2;
-  }
-
-
-
-</style>
- </head>
- 
- <body>
-  <h1>New York City Taxi Traffic</h1>
-
-<div id='map'>
-</div>
-
-<script src="topojson.v1.min.js"></script>
-<script src="d3.v3.min.js"></script>
-
-<!-- Code to make the nyc area map-->
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
 <script>
-            //Width and height
-	    	var sl = 2;
+  //globals
+var width, height, projection, path, graticule, svg, attributeArray = [], currentAttribute = 0, playing = false;
+
+
+            var sl = 2;
             var w = 200*sl;
             var h = 250*sl;
 
             //Define map projection
             var projection = d3.geo.mercator()
                                    .translate([w/2, h/2])
-                                   .scale([28000*sl]);
+                                   .scale([28000])
+                                   .center( [-73.86, 40.73] );
+                                   
 
             //Define path generator
             var coast = d3.geo.path()
-                             .projection(projection);
+                              .projection(projection);
 
             //Create SVG element
-            var svgmp = d3.select("#map")
-                          .append('svg')
-			                   .attr('class', 'nymap')
-                        .attr("width", w)
-                        .attr("height", h);
+            var map_obj = d3.select("#map_area")
+                            .append('svg')
+                            .attr('class', 'nymap')
+                            .attr("width", w)
+                            .attr("height", h);
+  loadData();  // let's load our data next
 
-            //Load in GeoJSON data
-            d3.json("boro_simple.json", function(json) {
-	
-		var center = d3.geo.centroid(json);
-		projection.center( [-73.86, 40.73] );
+
+
+function loadData() {
+
+  d3.json("boro_simple.json", function(error1, data1) { 
+  d3.csv("weekday_flux.csv", function(error2, data2) {
+  
+    processData( data1, data2 );
+
+  });
+  });
+};
+
+
+function processData(map,flux) 
+{
+  // function accepts any errors from the queue function as first argument, then
+  // each data object in the order of chained defer() methods above
+  //here we bind the data from the csv to the geojson data in features[i].properties.data
+ 
+  for ( var i in map.features) 
+  {
+  for ( var j in flux )
+    {
+      if (flux[j].id ==  map.features[i].properties.ntaname)
+      {
+        map.features[i].properties.data = flux[j];
+        break;
+      }
+    }
+  }
+ 
+  drawMap( map );
+ };  
+
+
+function drawMap( map)
+{
+            var sl = 2;
+            var w = 200*sl;
+            var h = 250*sl;
+
+
 
                 //Bind data and create one path per GeoJSON feature
-               svgmp.selectAll("path")
-                   .data(json.features)
+
+
+                  map_obj.selectAll("path")
+                   .data(map.features)
                    .enter()
                    .append("path")
                    .attr("d", coast)
-		   .filter( function(d){ if ( d.properties.ntaname.includes('park-') == true )
-		   							{
-		   								d3.select('this').attr("class", 'park');
-		   								return false;
-		   							}
-		   							else {return true;}	; 
-		   						} )
-
-		   .attr('id', function(d){ return d.properties.ntaname; } )
+                   .filter( function(d){ if ( d.properties.ntaname.includes('park-') == true )
+                    {
+                      d3.select('this').attr("class", 'park');
+                      return false;
+                    }
+                    else {return true;} ; 
+                  } )
+       .filter( function(d){ return ! d.properties.ntaname.includes('park-'); } )
+       .attr('id', function(d){ return d.properties.ntaname; } )
            .attr('class','default')
-		   .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
-		   .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
-		 
-		
-	            });
+       .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
+       .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
+
+
+}
+
+    /*  
+    for (var j in countryData) {  // for each row in the CSV
+      if(countries[i].properties.ntaname == countryData[j].id) {   // if they match
+        for(var k in countryData[i]) {   // for each column in the a row within the CSV
+          if(k != 'name' && k != 'id') {  // let's not add the name or id as props since we already have them
+            if(attributeArray.indexOf(k) == -1) { 
+               attributeArray.push(k);  // add new column headings to our array for later
+            }
+            countries[i].properties[k] = Number(countryData[j][k])  // add each CSV column key/value to geometry object
+          } 
+        }
+        break;  // stop looking through the CSV since we made our match
+      }
+    }
+  }
+  d3.select('#clock').html(attributeArray[currentAttribute]);  // populate the clock initially with the current year
+  drawMap(world);  // let's mug the map now with our newly populated data object 
+
+
+
+
+function drawMap(world) {
+
+    svg.selectAll(".country")   // select country objects (which don't exist yet)
+      .data(topojson.feature(world, world).features)  // bind data to these non-existent objects
+      .enter().append("path") // prepare data to be appended to paths
+      .attr("class", "country") // give them a class for styling and access later
+      .attr("id", function(d) { return "code_" + d.properties.id; }, true)  // give each a unique id for access later
+      .attr("d", path); // create them using the svg path generator defined above
+
+    var dataRange = getDataRange(); // get the min/max values from the current year's range of data values
+    d3.selectAll('.country')  // select all the countries
+    .attr('fill-opacity', function(d) {
+        return getColor(d.properties[attributeArray[currentAttribute]], dataRange);  // give them an opacity value based on their current value
+    });
+}
+
+function sequenceMap() {
+  
+    var dataRange = getDataRange(); // get the min/max values from the current year's range of data values
+    d3.selectAll('.country').transition()  //select all the countries and prepare for a transition to new values
+      .duration(750)  // give it a smooth time period for the transition
+      .attr('fill-opacity', function(d) {
+        return getColor(d.properties[attributeArray[currentAttribute]], dataRange);  // the end color value
+      })
+
+}
+
+function getColor(valueIn, valuesIn) {
+
+  var color = d3.scale.linear() // create a linear scale
+    .domain([valuesIn[0],valuesIn[1]])  // input uses min and max values
+    .range([.3,1]);   // output for opacity between .3 and 1 %
+
+  return color(valueIn);  // return that number to the caller
+}
+
+function getDataRange() {
+  // function loops through all the data values from the current data attribute
+  // and returns the min and max values
+
+  var min = Infinity, max = -Infinity;  
+  d3.selectAll('.country')
+    .each(function(d,i) {
+      var currentValue = d.properties[attributeArray[currentAttribute]];
+      if(currentValue <= min && currentValue != -99 && currentValue != 'undefined') {
+        min = currentValue;
+      }
+      if(currentValue >= max && currentValue != -99 && currentValue != 'undefined') {
+        max = currentValue;
+      }
+  });
+  return [min,max];  //boomsauce
+}
+
+function animateMap() {
+
+  var timer;  // create timer object
+  d3.select('#play')  
+    .on('click', function() {  // when user clicks the play button
+      if(playing == false) {  // if the map is currently playing
+        timer = setInterval(function(){   // set a JS interval
+          if(currentAttribute < attributeArray.length-1) {  
+              currentAttribute +=1;  // increment the current attribute counter
+          } else {
+              currentAttribute = 0;  // or reset it to zero
+          }
+          sequenceMap();  // update the representation of the map 
+          d3.select('#clock').html(attributeArray[currentAttribute]);  // update the clock
+        }, 2000);
+      
+        d3.select(this).html('stop');  // change the button label to stop
+        playing = true;   // change the status of the animation
+      } else {    // else if is currently playing
+        clearInterval(timer);   // stop the animation by clearing the interval
+        d3.select(this).html('play');   // change the button label to play
+        playing = false;   // change the status again
+      }
+  });
+}*/
+
+
+//window.onload = init();  // magic starts here
+  
 </script>
 </body>
+</html>
