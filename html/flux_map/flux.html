@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>NYC Traffic Analysis</title>
+<style>
+
+@import url(style.css);
+ 
+ <head>
+#circle circle {
+fill: none;
+pointer-events: all;
+}
+ 
+.group path {
+fill-opacity: .5;
+}
+ 
+path.chord {
+stroke: #000;
+stroke-width: .25px;
+}
+ 
+#circle:hover path.fade {
+display: none;
+}
+
+
+  path.default 
+  {
+          stroke-width: 0.5px;
+    fill: #ccc;
+      stroke: #666
+   }
+  path.selected
+  {
+      stroke: black;
+      stroke-width: 2.5px;
+    fill: #ccc;
+  }
+  path.park
+  {
+      stroke: black;
+      stroke-width: 2.5px;
+    fill: #F2F2F2;
+  }
+
+
+
+</style>
+ </head>
+ 
+ <body>
+  <h1>New York City Taxi Traffic</h1>
+
+<div id='map'>
+</div>
+
+<script src="topojson.v1.min.js"></script>
+<script src="d3.v3.min.js"></script>
+
+<!-- Code to make the nyc area map-->
+<script>
+            //Width and height
+	    	var sl = 2;
+            var w = 200*sl;
+            var h = 250*sl;
+
+            //Define map projection
+            var projection = d3.geo.mercator()
+                                   .translate([w/2, h/2])
+                                   .scale([28000*sl]);
+
+            //Define path generator
+            var coast = d3.geo.path()
+                             .projection(projection);
+
+            //Create SVG element
+            var svgmp = d3.select("#map")
+                          .append('svg')
+			                   .attr('class', 'nymap')
+                        .attr("width", w)
+                        .attr("height", h);
+
+            //Load in GeoJSON data
+            d3.json("boro_simple.json", function(json) {
+	
+		var center = d3.geo.centroid(json);
+		projection.center( [-73.86, 40.73] );
+
+                //Bind data and create one path per GeoJSON feature
+               svgmp.selectAll("path")
+                   .data(json.features)
+                   .enter()
+                   .append("path")
+                   .attr("d", coast)
+		   .filter( function(d){ if ( d.properties.ntaname.includes('park-') == true )
+		   							{
+		   								d3.select('this').attr("class", 'park');
+		   								return false;
+		   							}
+		   							else {return true;}	; 
+		   						} )
+
+		   .attr('id', function(d){ return d.properties.ntaname; } )
+           .attr('class','default')
+		   .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
+		   .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
+		 
+		
+	            });
+</script>
+</body>

@@ -48,4 +48,17 @@ mrg['net_flux'] = mrg.influx - mrg.efflux
 
 #Now reorient the data for d3j visulaization
 
-json_data = pd.pivot_table( mrg, values='net_flux', index='pickup_name', columns='hour' ).fillna(0).to_json()
+m = pd.pivot_table( mrg, values='net_flux', index='pickup_name', columns='hour' ).fillna(0)
+
+#Normalize the frame
+m=(m-m.mean())/(m.max() - m.min() )
+
+
+
+out=''
+for i in range( m.shape[0] ):
+    out = out + m.index[i] +','+ np.array2string( m.iloc[i].values, separator=',').replace('[','').replace(']','').replace('\n','') +'\n'
+
+h=open('/Users/friedj12/Documents/Data/NYC/html/flux_map/weekday_flux.csv','w')
+h.write( out )
+h.close()
