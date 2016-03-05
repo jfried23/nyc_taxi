@@ -53,15 +53,32 @@
       #clock {
         left: 65px;
       }
+
+
+  	path.default 
+	{
+       		stroke-width: 0.5px;
+		fill: #ccc;
+  		stroke: #666
+ 	 }
+	path.selected
+	{
+	    	stroke: black;
+    		stroke-width: 2.5px;
+		fill: #ccc;
+	}
+
+
     </style>
 </head>
 
 <body>
 
-  <div id="wrapper">  
+  <div id="wrapper"> 
+
       <div id="map_area"></div>
-  
-      <span id="clock">year</span>
+       <button id="play">play</button> 
+      <span id="clock">Time: </span>
   </div>
 
 
@@ -71,6 +88,9 @@
   //globals
 var width, height, projection, path, graticule, svg, attributeArray = [], currentAttribute = 0, playing = false;
 
+var color = d3.scale.linear()
+   .domain([-.8, 0, .8])
+   .range(["red", 'white',  "blue"])
 
             var w = 500;
             var h = 700;
@@ -144,18 +164,65 @@ function drawMap( map)
                    .attr("d", coast)
                    .filter( function(d){ if ( d.properties.ntaname.includes('park-') == true )
                     {
-                      d3.select('this').attr("class", 'park');
+                      d3.select('this').style("fill", 'whilte');
                       return false;
                     }
                     else {return true;} ; 
                   } )
        .filter( function(d){ return ! d.properties.ntaname.includes('park-'); } )
-       .attr('id', function(d){ return d.properties.ntaname; } )
+       .attr('id', function(d){ return d.properties.ntacode; } )
            .attr('class','default')
        .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
        .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
+	
+	animateMap( map );
+
+}
+
+function setColor( map, time )
+{	
+	for( var i in map.features )
+	{
+		
+		var id = map.features[i].properties.ntacode;
+		console.log( id )
+		d3.select( '#' + id )
+                  .transition() 
+                  .duration(250)
+                  .style('fill', color(map.features[i].properties.data[time]) );
+	}
+}
 
 
+function animateMap(map) {
+
+  var timer;  // create timer object
+  d3.select('#play')  
+    .on('click', function() {  // when user clicks the play button
+      if(playing == false) {  // if the map is currently playing
+        timer = setInterval(function(){   // set a JS interval
+          if(currentAttribute < 24) {  
+              currentAttribute +=1;  // increment the current attribute counter
+          } else {
+              currentAttribute = 1;  // or reset it to zero
+          }
+          setColor(map, currentAttribute);  // update the representation of the map
+
+	var tt ="" 
+	 if ( currentAttribute > 12 ) { tt = currentAttribute-12 + " PM" }
+          else { tt = currentAttribute + " AM " };
+ 
+          d3.select('#clock').html("Time: " + tt);  // update the clock
+        }, 2000);
+      
+        d3.select(this).html('stop');  // change the button label to stop
+        playing = true;   // change the status of the animation
+      } else {    // else if is currently playing
+        clearInterval(timer);   // stop the animation by clearing the interval
+        d3.select(this).html('play');   // change the button label to play
+        playing = false;   // change the status again
+      }
+  });
 }
 
     /*  
@@ -245,8 +312,11 @@ function animateMap() {
           } else {
               currentAttribute = 0;  // or reset it to zero
           }
-          sequenceMap();  // update the representation of the map 
-          d3.select('#clock').html(attributeArray[currentAttribute]);  // update the clock
+          sequenceMap();  // update the representation of the map
+	  var tt = 
+	  if ( currentAttribute > 12 ) { return currentAttribute-12 + " PM" }
+          else { return currentAttribute + " AM " };
+          d3.select('#clock').html("Time: " + tt);  // update the clock
         }, 2000);
       
         d3.select(this).html('stop');  // change the button label to stop

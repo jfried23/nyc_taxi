@@ -54,22 +54,29 @@ display: none;
 Here we are taking a look at the famious (at least amongst data anlysists) <a href=http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml> NYC Taxi and Limousine Commission Trip Records</a>. I will be using a subset of the total data corpus detailing 72,368,450 individual cab rides taken between January 2015 and June 2015 inclusive, and totalling ~28Gb of raw data. To get a handel on the data the GPS corrdinates for each pickup and drop-off location were binned into neighborhoods as defined by the <a href='http://www1.nyc.gov/site/planning/data-maps/open-data.page#other'>New York City Department of City Planning Neighborhood Tabulations</a> 2010 census tracts. All the anlysis was preformed using PostgreSQL / PostGIS (for the heavy geospatial stuff) and Python / Pandas (everything else); analysis scripts can be found on my <a href='https://github.com/jfried23/nyc_taxi'>github</a>. That out of the way and without further ado, lets take a look at the data!     
 </p>
 
+<h3>All the lonely people, where do they all come from?</h3> 
+      	<p>
+	First lets take a look at taxi cap passenger flux into/out of New York city neighborhoods durring an average weekday. (Here I am grouping all weekday trips by pickup neighbhood (efflux) or drop off neighhood (influx) and hour, and then aggregatting the groups by summing the total number of passengers. The net flux is simply the difference between the number of passengers that arrive in a neighbhood durring the hour, and then number that deprats.)  
 
-<div id = 'map'>
-	<h3>All the lonely people, where do they all come from?</h3> 
-	<p>
-	First lets take a look
+  <div id="wrapper"> 
+        
 	</p>
-	<aside>Mouseover to focus on travel from a particular neighborhood.
+       <button width =50 id="play">play</button> 
+      <span id="clock">Time: </span>
+	<aside>Click 'start' button to begin the animation.
 	<p>
 	<p>Black patches are parks.</a></p>
+	<p>Red indicates a net effulx of cab passengers durring the hour. Blue a net influx of passengers.
+	</a></p>
 	</p>
 	</aside>
+	<div id="map_area"></div>
  </div>
 
-<div>
-<p> Interesting to not note fsjkladgsjkl rwetadfs hjkldfsh weiutyhdksjlhadsiu tewdfshdsjkldgshkl sIUGHjkdgsahiuadsghjkgdsh cZSciohnboha'jl </p>
-</div>
+
+<p> 
+</p>
+
 
 
 <div id = 'chord'>
@@ -101,105 +108,146 @@ One feature that immagdelty stood out to me was that the cab riding population o
 
 <!-- Code to make the nyc area map-->
 <script>
-            //Width and height
-	    	var sl = 2;
-            var w = 200*sl;
-            var h = 250*sl;
+  //globals
+var width, height, projection, path, graticule, svg, attributeArray = [], currentAttribute = 0, playing = false;
+
+var color = d3.scale.linear()
+   .domain([-.8, 0, .8])
+   .range(["red", 'white',  "blue"])
+
+            var w = 500;
+            var h = 450;
 
             //Define map projection
             var projection = d3.geo.mercator()
                                    .translate([w/2, h/2])
-                                   .scale([28000*sl]);
+                                   .scale([70000])
+                                   .center( [-73.88, 40.74] );
+                                   
 
             //Define path generator
             var coast = d3.geo.path()
-                             .projection(projection);
+                              .projection(projection);
 
             //Create SVG element
-            var svgmp = d3.select("#map")
-                          .append('svg')
-			.attr('class', 'nymap')
-                        .attr("width", w)
-                        .attr("height", h);
+            var map_obj = d3.select("#map_area")
+                            .append('svg')
+                            .attr('class', 'nymap')
+                            .attr("width", w)
+                            .attr("height", h);
+  loadData();  // let's load our data next
 
-            //Load in GeoJSON data
-            d3.json("boro_simple.json", function(json) {
-	
-		var center = d3.geo.centroid(json);
-		projection.center( [-73.86, 40.73] );
 
-                //Bind data and create one path per GeoJSON feature
-               svgmp.selectAll("path")
-                   .data(json.features)
-                   .enter()
-                   .append("path")
-                   .attr("d", coast)
-		   .filter( function(d){ if ( d.properties.ntaname.includes('park-') == true )
-		   							{
-		   								d3.select('this').attr("class", 'park');
-		   								return false;
-		   							}
-		   							else {return true;}	; 
-		   						} )
 
-		   .attr('id', function(d){ return d.properties.ntaname; } )
-           .attr('class','default')
-		   .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
-		   .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
-		 
-		
-	            });
-</script>
+function loadData() {
 
-<script>
-            //Width and height
-	    	var sl = 2;
-            var w = 200*sl;
-            var h = 250*sl;
+  d3.json("boro_simple.json", function(error1, data1) { 
+  d3.csv("weekday_flux.csv", function(error2, data2) {
+  
+    processData( data1, data2 );
 
-            //Define map projection
-            var projection = d3.geo.mercator()
-                                   .translate([w/2, h/2])
-                                   .scale([28000*sl]);
+  });
+  });
+};
 
-            //Define path generator
-            var coast = d3.geo.path()
-                             .projection(projection);
 
-            //Create SVG element
-            var svgmp2 = d3.select("#map")
-                          .append("svg")
-			.attr('class', 'nymap')
-                        .attr("width", w)
-                        .attr("height", h);
+function processData(map,flux) 
+{
+  // function accepts any errors from the queue function as first argument, then
+  // each data object in the order of chained defer() methods above
+  //here we bind the data from the csv to the geojson data in features[i].properties.data
+ 
+  for ( var i in map.features) 
+  {
+  for ( var j in flux )
+    {
+      if (flux[j].id ==  map.features[i].properties.ntaname)
+      {
+        map.features[i].properties.data = flux[j];
+        break;
+      }
+    }
+  }
+ 
+  drawMap( map );
+ };  
 
-            //Load in GeoJSON data
-            d3.json("boro_simple.json", function(json) {
-	
-		var center = d3.geo.centroid(json);
-		projection.center( [-73.86, 40.73] );
+
+function drawMap( map)
+{
+
 
                 //Bind data and create one path per GeoJSON feature
-               svgmp2.selectAll("path")
-                   .data(json.features)
+
+
+                  map_obj.selectAll("path")
+                   .data(map.features)
                    .enter()
                    .append("path")
                    .attr("d", coast)
                    .filter( function(d){ if ( d.properties.ntaname.includes('park-') == true )
-		   							{
-		   								d3.select('this').attr("class", 'park');
-		   								return false;
-		   							}
-		   							else {return true;}	; 
-		   						} )
-		   .filter( function(d){ return ! d.properties.ntaname.includes('park-'); } )
-		   .attr('id', function(d){ return d.properties.ntaname; } )
+                    {
+                      d3.select('this').style("fill", 'whilte');
+                      return false;
+                    }
+                    else {return true;} ; 
+                  } )
+       .filter( function(d){ return ! d.properties.ntaname.includes('park-'); } )
+       .attr('id', function(d){ return d.properties.ntacode; } )
            .attr('class','default')
-		   .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
-		   .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
-		 
+       .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
+       .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
+	
+	animateMap( map );
+
+}
+
+function setColor( map, time )
+{	
+	for( var i in map.features )
+	{
 		
-	            });
+		var id = map.features[i].properties.ntacode;
+		console.log( id )
+		d3.select( '#' + id )
+                  .transition() 
+                  .duration(250)
+                  .style('fill', color(map.features[i].properties.data[time]) );
+	}
+}
+
+
+function animateMap(map) {
+
+  var timer;  // create timer object
+  d3.select('#play')  
+    .on('click', function() {  // when user clicks the play button
+      if(playing == false) {  // if the map is currently playing
+        timer = setInterval(function(){   // set a JS interval
+          if(currentAttribute < 24) {  
+              currentAttribute +=1;  // increment the current attribute counter
+          } else {
+              currentAttribute = 1;  // or reset it to zero
+          }
+          setColor(map, currentAttribute);  // update the representation of the map
+
+	var tt ="" 
+	 if ( currentAttribute > 12 ) { tt = currentAttribute-12 + " PM" }
+          else { tt = currentAttribute + " AM " };
+ 
+          d3.select('#clock').html("Time: " + tt);  // update the clock
+        }, 2000);
+      
+        d3.select(this).html('stop');  // change the button label to stop
+        playing = true;   // change the status of the animation
+      } else {    // else if is currently playing
+        clearInterval(timer);   // stop the animation by clearing the interval
+        d3.select(this).html('play');   // change the button label to play
+        playing = false;   // change the status again
+      }
+  });
+}
+  
 </script>
 
 
