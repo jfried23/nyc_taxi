@@ -18,6 +18,19 @@ path.chord {
 stroke: #000;
 stroke-width: .25px;
 }
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 120px;
+    height: 40px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}
  
 #circle:hover path.fade {
 display: none;
@@ -111,6 +124,10 @@ One feature that immagdelty stood out to me was that the cab riding population o
   //globals
 var width, height, projection, path, graticule, svg, attributeArray = [], currentAttribute = 0, playing = false;
 
+ var div = d3.select("#map_area").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
 var color = d3.scale.linear()
    .domain([-.8, 0, .8])
    .range(["red", 'white',  "blue"])
@@ -195,10 +212,24 @@ function drawMap( map)
        .filter( function(d){ return ! d.properties.ntaname.includes('park-'); } )
        .attr('id', function(d){ return d.properties.ntacode; } )
            .attr('class','default')
-       .on('mouseover',function(d){  d3.select(this).attr('class','selected')} )
+       .on('mouseover',
+	function(d){  
+
+	div.transition()
+                .duration(200)
+                .style("opacity", .9);
+
+	div.html( d.properties.ntaname )
+                .style("left", (d3.event.pageX) + "px")
+                .style("top", (d3.event.pageY - 28) + "px");
+
+	d3.select(this).attr('class','selected')
+	})
        .on('mouseout', function(d){  d3.select(this).attr('class','default') } ); 
 	
 	animateMap( map );
+
+
 
 }
 
