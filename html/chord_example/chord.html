@@ -64,13 +64,12 @@ display: none;
 <h1>New York City Taxi Traffic</h1>
 
 <p>
-Here we are taking a look at the famious (at least amongst data anlysists) <a href=http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml> NYC Taxi and Limousine Commission Trip Records</a>. I will be using a subset of the total data corpus detailing 72,368,450 individual cab rides taken between January 2015 and June 2015 inclusive, and totalling ~28Gb of raw data. To get a handel on the data the GPS corrdinates for each pickup and drop-off location were binned into neighborhoods as defined by the <a href='http://www1.nyc.gov/site/planning/data-maps/open-data.page#other'>New York City Department of City Planning Neighborhood Tabulations</a> 2010 census tracts. All the anlysis was preformed using PostgreSQL / PostGIS (for the heavy geospatial stuff) and Python / Pandas (everything else); analysis scripts can be found on my <a href='https://github.com/jfried23/nyc_taxi'>github</a>. That out of the way and without further ado, lets take a look at the data!     
+Here we are taking a look at the famous (at least amongst data analysists) <a href=http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml> NYC Taxi and Limousine Commission Trip Records</a>. I will be using a subset of the total data corpus detailing 72,368,450 individual cab rides taken between January 2015 and June 2015 inclusive, and totaling ~28Gb of raw data. To get a handle on the data the GPS coordinates for each pickup and drop-off location were binned into neighborhoods as defined by the <a href='http://www1.nyc.gov/site/planning/data-maps/open-data.page#other'>New York City Department of City Planning Neighborhood Tabulations</a> 2010 census tracts. All the analysis was preformed using PostgreSQL / PostGIS (for the heavy geospatial stuff) and Python / Pandas (everything else); analysis scripts can be found on my <a href='https://github.com/jfried23/nyc_taxi'>github</a>. That out of the way and without further ado, lets take a look at the data!     
 </p>
 
 <h3>All the lonely people, where do they all come from?</h3> 
       	<p>
-	First lets take a look at taxi cap passenger flux into/out of New York city neighborhoods durring an average weekday. (Here I am grouping all weekday trips by pickup neighbhood (efflux) or drop off neighhood (influx) and hour, and then aggregatting the groups by summing the total number of passengers. The net flux is simply the difference between the number of passengers that arrive in a neighbhood durring the hour, and then number that deprats.)  
-
+First let’s take a look at taxi cab passenger flux into/out of New York city neighborhoods during an average weekday. (Here I am grouping all weekday trips by pickup neighborhood (efflux) or drop off neighborhood (influx) and hour, and then aggregating the groups by summing the total number of passengers. The net flux is simply the difference between the number of passengers that arrive in a neighborhood during the hour, and then number that departs.)	  
   <div id="wrapper"> 
         
 	</p>
@@ -88,21 +87,36 @@ Here we are taking a look at the famious (at least amongst data anlysists) <a hr
 
 
 <p> 
+You will notice during the animation that between 6:00 A.M. and 12:00 P.M. neighborhoods like Midtown Hudson Yards, SOHO and Lower Manhattan all experience a large net influx of traffic (Blue) that drops off into the early afternoon. This trend then reverses itself around 7:00PM as the net cab traffic begins to stream out of these areas (Red) and the work day draws to a close.    
+</p>
+
+<p>
+Also noteworthy are the airports; JFK and LGA. Cabs begin taking more travelers to the airport durring the early A.M.(beging around 5:00 A.M.) and by the early afternoon ~11:00 A.M. are picking up more passgeners from the airports.
+</p>
+
+<p>
+This style of visulaization helps us to understand where passengers go durring the work day, but not where they are comming from.
+</p>
+<h3>Connectivty between 20 neighborhoods with the most taxi pickups</h3> 
+
+<p>
+I next looked at the most frequent taxi trips in terms of departure and destination neighborhoods, and made a chord diagram representing where passegeners travel between 20 neighborhoods with the most taxi traffic.   
 </p>
 
 
 
 <div id = 'chord'>
-	<h3>Connectivty between 20 neighborhoods with the most taxi pickups</h3> 
-	<aside>Mouseover to focus on travel from a particular neighborhood.
+	<aside>Mouseover to focus on travel from a particular neighborhood. Note that the colors in this graph serve only to distinguish the neighhoods and no longer reprsent passenger flux. 
 	<p>
 	<p>Thanks to Mike Bostock for <a href="http://bost.ocks.org/mike/uberdata/">Uber Rides by Neighborhood!</a></p>
 	</p>
 	</aside>
  </div>
-
 <p>
-One feature that immagdelty stood out to me was that the cab riding population of the 'North Side' neighborh, more commonly known as Williamsburg Brooklyn (home of beards, blue ribbon beer, trucker hats and all things meta/ironic), seldom take cabs into Manhattan. Most cab fares that begin in Williamsburg end in Williamsburg. 
+It is immediately clear that Midtown Manhattan is the central tranisit hub for taxi traffic in the city. 
+</p>
+<p>
+Also interesting is that the cab riding population of the 'North Side' neighborhood, more commonly known as Williamsburg Brooklyn (home of beards, blue ribbon beer, trucker hats and all things meta/ironic), seldom take cabs into Manhattan. Most cab fares (~60%) that begin in Williamsburg end in Williamsburg.
 </p>
 
 
@@ -262,8 +276,10 @@ function animateMap(map) {
           setColor(map, currentAttribute);  // update the representation of the map
 
 	var tt ="" 
-	 if ( currentAttribute > 12 ) { tt = currentAttribute-12 + " PM" }
-          else { tt = currentAttribute + " AM " };
+	 if  (currentAttribute == 12) {tt = currentAttribute + " PM" }
+	 else if (currentAttribute == 24)  {tt = currentAttribute-12 + " AM" }
+	 else if ( currentAttribute > 12 ) { tt = currentAttribute-12 + " PM" }
+         else { tt = currentAttribute + " AM " };
  
           d3.select('#clock').html("Time: " + tt);  // update the clock
         }, 2000);
