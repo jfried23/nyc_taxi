@@ -64,7 +64,15 @@ display: none;
 <h1>New York City Taxi Traffic</h1>
 
 <p>
-Here we are taking a look at the famous (at least amongst data analysists) <a href=http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml> NYC Taxi and Limousine Commission Trip Records</a>. I will be using a subset of the total data corpus detailing 72,368,450 individual cab rides taken between January 2015 and June 2015 inclusive, and totaling ~28Gb of raw data. To get a handle on the data the GPS coordinates for each pickup and drop-off location were binned into neighborhoods as defined by the <a href='http://www1.nyc.gov/site/planning/data-maps/open-data.page#other'>New York City Department of City Planning Neighborhood Tabulations</a> 2010 census tracts. All the analysis was preformed using PostgreSQL / PostGIS (for the heavy geospatial stuff) and Python / Pandas (everything else); analysis scripts can be found on my <a href='https://github.com/jfried23/nyc_taxi'>github</a>. That out of the way and without further ado, lets take a look at the data!     
+Here we are taking a look at the famous (at least amongst data analysists) <a href=http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml> NYC Taxi and Limousine Commission Trip Records</a>. I will be using a subset of the total data corpus detailing 72,368,450 individual cab rides taken between January 2015 and June 2015 inclusive, and totaling ~28Gb of raw data.</p>
+<div id = 'allthelights'>
+<aside>	
+Yellow cab pickup locations for February 2015. When the reported GPS coordinates are binned onto a 1024x1024 grid, an ‘image’ of Manhattans roadways and major airports emerges. 
+</aside>
+<img src='cab_pickups_feb2015.png' height=450 width =450>
+</div>
+
+<p> To get a handle on the data the GPS coordinates for each pickup and drop-off location were binned into neighborhoods as defined by the <a href='http://www1.nyc.gov/site/planning/data-maps/open-data.page#other'>New York City Department of City Planning Neighborhood Tabulations</a> 2010 census tracts. All the analysis was preformed using PostgreSQL / PostGIS (for the heavy geospatial stuff), Python / Pandas (for any additional processing), and D3.js to generate the images; analysis scripts can be found on my <a href='https://github.com/jfried23/nyc_taxi'>github</a>. That out of the way and without further ado, lets take a look at the data!     
 </p>
 
 <h3>All the lonely people, where do they all come from?</h3> 
